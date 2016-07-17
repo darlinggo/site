@@ -1,4 +1,4 @@
-baseurl = "https://darlinggo.co"
+baseurl = "https://darlinggo.co/"
 languageCode = "en-us"
 title = "Darling"
 url = "/{slug}"
