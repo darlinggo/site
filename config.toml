@@ -1,0 +1,4 @@
+baseurl = "https://darlinggo.co"
+languageCode = "en-us"
+title = "Darling"
+url = "/{slug}"

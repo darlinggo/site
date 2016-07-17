@@ -1,0 +1,7 @@
+		<div class="full-width center-wrapper">
+			<div class="center-vertical"> 
+				<div class="center-spans"><a href="{{ .Site.BaseURL }}" title="Darling"><img class="logo block-centered" src="/img/acorn.svg" /></a></div>
+				<h1 class="title center-spans">{{ .Title }}</h1>
+				<div class="center-spans">{{ range .Site.Sections.project.Pages.ByTitle }}<a href="{{ .Permalink }}" title="{{ .Title }}">{{ .Title }}</a> {{ end }}</div>
+			</div>
+		</div>
