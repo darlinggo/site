@@ -1,3 +1,0 @@
-{{ partial "header.html" . }}
-    <img src="img/acorn.svg" />
-{{ partial "footer.html" . }}
