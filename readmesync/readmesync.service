@@ -7,8 +7,8 @@ Requires=docker.service
 TimeoutStartSec=0
 ExecStartPre=-/usr/bin/docker kill readmesync
 ExecStartPre=-/usr/bin/docker rm readmesync
-ExecStartPre=/usr/bin/docker pull darlinggo/readmesync
-ExecStart=/usr/bin/docker run --name readmesync -p 9001:9001 -v /path/to/your/output/folder:/output -e "GITHUB_TOKEN={YOUR GITHUB TOKEN HERE}" -e "WEBHOOK_SECRET={YOUR WEBHOOK SECRET HERE}" darlinggo/readmesync
+ExecStartPre=/usr/bin/docker pull darling/readmesync
+ExecStart=/usr/bin/docker run --name readmesync -p 9001:9001 -v /path/to/your/output/folder:/output -e "GITHUB_TOKEN={YOUR GITHUB TOKEN HERE}" -e "WEBHOOK_SECRET={YOUR WEBHOOK SECRET HERE}" darling/readmesync
 ExecStop=/usr/bin/docker stop readmesync
 
 [Install]

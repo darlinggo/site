@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -36,6 +37,10 @@ type env struct {
 	githubToken string
 	hookSecret  []byte
 	dir         string
+	hugoCmd     string
+	hugoConfig  string
+	hugoSource  string
+	hugoOutput  string
 }
 
 func pullReadme(pkg, accessToken string) ([]byte, error) {
@@ -177,7 +182,7 @@ func (e env) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for repo, readme := range readmes {
-		f, err := os.Create(filepath.Join(e.dir, repo+".md"))
+		f, err := os.Create(filepath.Join(e.hugoSource, e.dir, repo+".md"))
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -199,7 +204,18 @@ func (e env) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	output, err := exec.Command(e.hugoCmd, `--config="`+e.hugoConfig+`"`, `--source="`+e.hugoSource+`"`, `--output="`+e.hugoOutput+`"`).CombinedOutput()
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	log.Println(string(output))
 	w.WriteHeader(http.StatusOK)
+}
+
+func health(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("ok"))
 }
 
 func main() {
@@ -207,10 +223,10 @@ func main() {
 		dir:         os.ExpandEnv(os.Getenv("OUTPUT_DIR")),
 		hookSecret:  []byte(os.Getenv("WEBHOOK_SECRET")),
 		githubToken: os.Getenv("GITHUB_TOKEN"),
-	}
-	if environment.dir == "" {
-		log.Println("OUTPUT_DIR must be set to the directory to store the project READMEs in.")
-		os.Exit(1)
+		hugoCmd:     os.ExpandEnv(os.Getenv("HUGO_CMD")),
+		hugoConfig:  os.ExpandEnv(os.Getenv("HUGO_CONFIG")),
+		hugoSource:  os.ExpandEnv(os.Getenv("HUGO_SOURCE")),
+		hugoOutput:  os.ExpandEnv(os.Getenv("HUGO_OUTPUT")),
 	}
 	if environment.hookSecret == nil || len(environment.hookSecret) < 1 {
 		log.Println("WEBHOOK_SECRET must be set to the secret used to verify webhook requests.")
@@ -220,8 +236,29 @@ func main() {
 		log.Println("GITHUB_TOKEN must be set to a personal access token for Github.")
 		os.Exit(1)
 	}
-	http.Handle("/", environment)
-	err := http.ListenAndServe(":9001", nil)
+	if environment.hugoCmd == "" {
+		log.Println("HUGO_CMD must be set to the path to the hugo command.")
+		os.Exit(1)
+	}
+	if environment.hugoConfig == "" {
+		log.Println("HUGO_CONFIG must be set to the path to the hugo config file to use.")
+		os.Exit(1)
+	}
+	if environment.hugoSource == "" {
+		log.Println("HUGO_SOURCE must be set to the root directory of your hugo site.")
+		os.Exit(1)
+	}
+	if environment.hugoOutput == "" {
+		log.Println("HUGO_OUTPUT must be set to the directory you'd like the final HTML files written to.")
+		os.Exit(1)
+	}
+	if environment.dir == "" {
+		log.Println("OUTPUT_DIR must be set to the directory within " + environment.hugoSource + " to store the project READMEs in.")
+		os.Exit(1)
+	}
+	http.HandleFunc("/health", health)
+	http.Handle("/hook", environment)
+	err := http.ListenAndServe("0.0.0.0:9001", nil)
 	if err != nil {
 		panic(err)
 	}
