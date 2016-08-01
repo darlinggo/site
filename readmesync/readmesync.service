@@ -1,0 +1,15 @@
+[Unit]
+Description=Service that uses webhooks to sync READMEs from different projects to disk.
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill readmesync
+ExecStartPre=-/usr/bin/docker rm readmesync
+ExecStartPre=/usr/bin/docker pull darlinggo/readmesync
+ExecStart=/usr/bin/docker run --name readmesync -p 9001:9001 -v /path/to/your/output/folder:/output -e "GITHUB_TOKEN={YOUR GITHUB TOKEN HERE}" -e "WEBHOOK_SECRET={YOUR WEBHOOK SECRET HERE}" darlinggo/readmesync
+ExecStop=/usr/bin/docker stop readmesync
+
+[Install]
+WantedBy=multi-user.target
