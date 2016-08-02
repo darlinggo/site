@@ -38,9 +38,7 @@ type env struct {
 	hookSecret  []byte
 	dir         string
 	hugoCmd     string
-	hugoConfig  string
 	hugoSource  string
-	hugoOutput  string
 }
 
 func pullReadme(pkg, accessToken string) ([]byte, error) {
@@ -122,7 +120,7 @@ func (e env) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	event := r.Header.Get("X-Github-Event")
-	if event != "push" && event != "ping" {
+	if event != "push" && event != "ping" && event != "sync-all" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -159,8 +157,6 @@ func (e env) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var readmes map[string][]byte
 	if event == "sync-all" {
 		readmes = syncAll(req.Repos, e.githubToken)
-		w.WriteHeader(http.StatusOK)
-		return
 	} else {
 		ref := strings.Split(req.Ref, "/")
 		if len(ref) != 3 {
@@ -204,9 +200,12 @@ func (e env) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	output, err := exec.Command(e.hugoCmd, `--config="`+e.hugoConfig+`"`, `--source="`+e.hugoSource+`"`, `--output="`+e.hugoOutput+`"`).CombinedOutput()
+	cmd := exec.Command(e.hugoCmd)
+	cmd.Dir = e.hugoSource
+	output, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Println(err)
+		log.Println(string(output))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -224,9 +223,7 @@ func main() {
 		hookSecret:  []byte(os.Getenv("WEBHOOK_SECRET")),
 		githubToken: os.Getenv("GITHUB_TOKEN"),
 		hugoCmd:     os.ExpandEnv(os.Getenv("HUGO_CMD")),
-		hugoConfig:  os.ExpandEnv(os.Getenv("HUGO_CONFIG")),
 		hugoSource:  os.ExpandEnv(os.Getenv("HUGO_SOURCE")),
-		hugoOutput:  os.ExpandEnv(os.Getenv("HUGO_OUTPUT")),
 	}
 	if environment.hookSecret == nil || len(environment.hookSecret) < 1 {
 		log.Println("WEBHOOK_SECRET must be set to the secret used to verify webhook requests.")
@@ -240,16 +237,8 @@ func main() {
 		log.Println("HUGO_CMD must be set to the path to the hugo command.")
 		os.Exit(1)
 	}
-	if environment.hugoConfig == "" {
-		log.Println("HUGO_CONFIG must be set to the path to the hugo config file to use.")
-		os.Exit(1)
-	}
 	if environment.hugoSource == "" {
 		log.Println("HUGO_SOURCE must be set to the root directory of your hugo site.")
-		os.Exit(1)
-	}
-	if environment.hugoOutput == "" {
-		log.Println("HUGO_OUTPUT must be set to the directory you'd like the final HTML files written to.")
 		os.Exit(1)
 	}
 	if environment.dir == "" {
