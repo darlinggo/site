@@ -40,3 +40,9 @@
 	margin: 0 auto;
 	padding: 45px;
 }
+
+.github-mark {
+	vertical-align: text-bottom;
+	padding: .25em;
+	max-width: .75em;
+}
