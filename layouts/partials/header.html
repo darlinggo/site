@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Darling{{ if not .IsHome }} - {{ .Title }}{{ end }}</title>{{ if .Params.repo }}
-		<meta name="go-import" content="{{ .Site.BaseURL}}{{ .Params.repo }} git https://github.com/darlinggo/{{ .Params.repo }}">{{ end }}
+		<meta name="go-import" content="{{ .Site.BaseURL}}{{ .Params.repo }}/ git https://github.com/darlinggo/{{ .Params.repo }}">{{ end }}
 		<link href="/css/github.css" rel="stylesheet" type="text/css">
 		<link href="/css/syntax.css" rel="stylesheet" type="text/css">
 		<link href="/css/theme.css" rel="stylesheet" type="text/css">
