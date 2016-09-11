@@ -2,9 +2,10 @@
 <html>
   <head>
     <title>Darling{{ if not .IsHome }} - {{ .Title }}{{ end }}</title>{{ if .Params.repo }}
-		<meta name="go-import" content="{{ replaceRE "https?://(.*)" "$1" .Site.BaseURL }}{{ .Params.repo }} git https://github.com/darlinggo/{{ .Params.repo }}">{{ end }}
-		<link href="/css/github.css" rel="stylesheet" type="text/css">
-		<link href="/css/syntax.css" rel="stylesheet" type="text/css">
-		<link href="/css/theme.css" rel="stylesheet" type="text/css">
+    <meta name="go-import" content="{{ replaceRE "https?://(.*)" "$1" .Site.BaseURL }}{{ .Params.repo }} git https://github.com/darlinggo/{{ .Params.repo }}">
+    <meta name="go-source" content="{{ replaceRE "https?://(.*)" "$1" .Site.BaseURL }}{{ .Params.repo }} https://github.com/darlinggo/{{ .Params.repo }}/ https://github.com/darlinggo/{{ .Params.repo }}/tree/master{/dir} https://github.com/darlinggo/{{ .Params.repo }}/blob/master{/dir}/{file}#L{line}">{{ end }}
+    <link href="/css/github.css" rel="stylesheet" type="text/css">
+    <link href="/css/syntax.css" rel="stylesheet" type="text/css">
+    <link href="/css/theme.css" rel="stylesheet" type="text/css">
   </head>
   <body>
