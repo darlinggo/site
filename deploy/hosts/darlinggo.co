@@ -1,0 +1,42 @@
+server {
+	listen 80 default_server;
+	listen [::]:80 default_server;
+
+	include /etc/nginx/expires.conf;
+
+	root /usr/share/nginx/html/darlinggo.co;
+
+	server_name darlinggo.co;
+	index index.html;
+
+	location /health {
+		expires -1;
+		add_header Content-Type text/plain;
+		return 200 'OK';
+	}
+
+	if ($http_x_forwarded_proto = "http") {
+		return 301 https://darlinggo.co$request_uri;
+	}
+}
+
+server {
+	listen 80;
+	listen [::]:80;
+
+	include /etc/nginx/expires.conf;
+
+	server_name www.darlinggo.co;
+
+	location / {
+		expires max;
+		add_header Cache-Control "public";
+		return 301 https://darlinggo.co$request_uri;
+	}
+
+	location /health {
+		expires -1;
+		add_header Content-Type text/plain;
+		return 200 'OK';
+	}
+}
